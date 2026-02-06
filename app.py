@@ -17,8 +17,6 @@ from typing import Optional, List, Dict, Any
 CERBERUS_PATH = Path(__file__).parent
 sys.path.insert(0, str(CERBERUS_PATH))
 
-from cerberus import Cerberus
-
 # Database path
 DB_PATH = Path.home() / ".cerberus" / "business.db"
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -117,6 +115,7 @@ class CerberusAPI:
     def _init_cerberus(self):
         """Initialize Cerberus platform."""
         try:
+            from cerberus import Cerberus
             self.cerberus = Cerberus()
         except Exception as e:
             print(f"Warning: Could not initialize Cerberus: {e}")
@@ -518,179 +517,349 @@ HTML = '''
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Cerberus Dashboard</title>
+    <title>Cerberus Command Center</title>
     <style>
+        @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+        :root {
+            color-scheme: dark;
+            --bg-0: #06070d;
+            --bg-1: #0b1021;
+            --bg-2: #101a32;
+            --glass: rgba(16, 24, 44, 0.6);
+            --glass-strong: rgba(16, 24, 44, 0.75);
+            --line: rgba(255, 255, 255, 0.08);
+            --text: #eaf2ff;
+            --muted: #98a3c7;
+            --accent: #57e2e5;
+            --accent-2: #f2b880;
+            --accent-3: #9ef0b0;
+            --danger: #ff6b6b;
+            --warn: #ffd166;
+            --success: #2fe3a6;
+            --shadow: 0 24px 60px rgba(5, 10, 24, 0.65);
+            --glow: 0 0 30px rgba(87, 226, 229, 0.25);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
+            font-family: "Space Grotesk", "Sora", "Manrope", system-ui, sans-serif;
+            background: radial-gradient(circle at 10% 10%, #1b2b53 0%, transparent 45%),
+                        radial-gradient(circle at 80% 20%, #2a1345 0%, transparent 40%),
+                        radial-gradient(circle at 80% 90%, #133d38 0%, transparent 50%),
+                        linear-gradient(160deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+            color: var(--text);
             min-height: 100vh;
+            overflow: hidden;
         }
 
-        .app {
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(87, 226, 229, 0.08), transparent 45%),
+                        radial-gradient(circle at 70% 80%, rgba(242, 184, 128, 0.08), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-shell {
             display: flex;
             height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Sidebar */
         .sidebar {
-            width: 220px;
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
+            width: 250px;
+            padding: 28px 22px;
+            background: rgba(7, 12, 26, 0.75);
+            border-right: 1px solid var(--line);
+            backdrop-filter: blur(18px);
             display: flex;
             flex-direction: column;
+            gap: 18px;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 30px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            font-size: 20px;
         }
 
-        .logo span { color: #ffd700; }
+        .logo-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(87, 226, 229, 0.4), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(87, 226, 229, 0.5);
+            display: grid;
+            place-items: center;
+            box-shadow: var(--glow);
+            font-size: 18px;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
         .nav-item {
-            padding: 12px 16px;
-            margin: 4px 0;
-            border-radius: 8px;
+            border: 1px solid transparent;
+            padding: 12px 14px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 10px;
+            background: transparent;
+            color: var(--text);
+            font-size: 14px;
         }
 
-        .nav-item:hover { background: rgba(255,255,255,0.1); }
-        .nav-item.active { background: rgba(255,215,0,0.2); color: #ffd700; }
+        .nav-item:hover {
+            background: rgba(87, 226, 229, 0.08);
+            border-color: rgba(87, 226, 229, 0.3);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(87, 226, 229, 0.25), rgba(87, 226, 229, 0.05));
+            border-color: rgba(87, 226, 229, 0.5);
+            box-shadow: var(--glow);
+        }
 
         .nav-badge {
-            background: #e74c3c;
-            color: white;
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 10px;
             margin-left: auto;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ffd4d4;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 107, 107, 0.4);
         }
 
-        /* Main content */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line);
+        }
+
+        .sidebar-footer p {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        /* Main */
         .main {
             flex: 1;
-            padding: 30px;
+            padding: 28px 32px 32px;
             overflow-y: auto;
         }
 
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .page-sub {
+            color: var(--muted);
+            margin-top: 6px;
+            font-size: 13px;
+        }
+
+        .topbar-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chip {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            font-size: 12px;
+        }
+
         .page { display: none; }
-        .page.active { display: block; }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
 
-        h1 { margin-bottom: 20px; }
-        h2 { margin: 20px 0 15px; font-size: 18px; color: #aaa; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* Stats cards */
-        .stats-grid {
+        h2 { margin: 20px 0 12px; font-size: 16px; color: var(--muted); font-weight: 600; }
+
+        /* Panels */
+        .panel-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
         }
 
         .stat-card {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #ffd700;
+            font-size: 28px;
+            font-weight: 700;
         }
 
         .stat-label {
-            color: #aaa;
-            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .stat-pill {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(87, 226, 229, 0.4);
+            color: var(--accent);
+            background: rgba(87, 226, 229, 0.08);
+        }
+
+        /* Charts */
+        .spark-wrap {
+            height: 120px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
         }
 
         /* Tables */
         .table-container {
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
+            background: var(--glass-strong);
+            border-radius: 16px;
             overflow: hidden;
+            border: 1px solid var(--line);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 13px;
         }
 
         th, td {
             padding: 12px 16px;
             text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-        th { background: rgba(0,0,0,0.2); color: #aaa; font-weight: 500; }
-
-        tr:hover { background: rgba(255,255,255,0.05); }
+        th { color: var(--muted); font-weight: 500; background: rgba(255,255,255,0.02); }
+        tr:hover { background: rgba(255,255,255,0.04); }
 
         /* Status badges */
         .status {
             padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
-        .status.pending { background: #f39c12; color: #000; }
-        .status.in_progress { background: #3498db; }
-        .status.completed { background: #27ae60; }
-        .status.new { background: #e74c3c; }
-        .status.converted { background: #9b59b6; }
+        .status.pending { background: rgba(255, 209, 102, 0.2); color: var(--warn); border: 1px solid rgba(255, 209, 102, 0.5); }
+        .status.in_progress { background: rgba(87, 226, 229, 0.2); color: var(--accent); border: 1px solid rgba(87, 226, 229, 0.5); }
+        .status.completed { background: rgba(47, 227, 166, 0.2); color: var(--success); border: 1px solid rgba(47, 227, 166, 0.5); }
+        .status.new { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: 1px solid rgba(255, 107, 107, 0.5); }
+        .status.converted { background: rgba(158, 240, 176, 0.2); color: var(--accent-3); border: 1px solid rgba(158, 240, 176, 0.5); }
 
         /* Buttons */
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
+            padding: 10px 18px;
+            border: 1px solid transparent;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
         }
 
-        .btn-primary { background: #ffd700; color: #000; }
-        .btn-primary:hover { background: #ffed4a; }
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(87, 226, 229, 0.6), rgba(87, 226, 229, 0.2));
+            border-color: rgba(87, 226, 229, 0.6);
+            color: #07131c;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--glow); }
 
-        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
-        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-secondary { background: rgba(255,255,255,0.06); border-color: var(--line); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.12); }
 
-        .btn-danger { background: #e74c3c; color: #fff; }
-        .btn-small { padding: 6px 12px; font-size: 12px; }
+        .btn-danger { background: rgba(255, 107, 107, 0.2); color: #ffdcdc; border-color: rgba(255, 107, 107, 0.5); }
+        .btn-small { padding: 6px 12px; font-size: 11px; }
 
         /* Forms */
         .form-group { margin-bottom: 15px; }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            color: #aaa;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
         .form-group input, .form-group textarea, .form-group select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            background: rgba(0,0,0,0.3);
-            color: #fff;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: rgba(7, 12, 26, 0.6);
+            color: var(--text);
             font-size: 14px;
         }
 
-        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group textarea { min-height: 110px; resize: vertical; }
 
         /* Modal */
         .modal {
@@ -700,35 +869,38 @@ HTML = '''
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(5, 10, 24, 0.85);
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            backdrop-filter: blur(4px);
         }
 
         .modal.active { display: flex; }
 
         .modal-content {
-            background: #1a1a2e;
-            padding: 30px;
-            border-radius: 16px;
+            background: rgba(10, 16, 34, 0.95);
+            padding: 26px;
+            border-radius: 18px;
             width: 90%;
-            max-width: 500px;
+            max-width: 520px;
             max-height: 80vh;
             overflow-y: auto;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .modal-close {
             background: none;
             border: none;
-            color: #fff;
+            color: var(--text);
             font-size: 24px;
             cursor: pointer;
         }
@@ -736,36 +908,38 @@ HTML = '''
         /* Notes */
         .notes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
         }
 
         .note-card {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+            padding: 16px;
+            border-radius: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            border: 1px solid var(--line);
         }
 
-        .note-card:hover { transform: translateY(-2px); }
-        .note-card.pinned { border-left: 3px solid #ffd700; }
+        .note-card:hover { transform: translateY(-2px); box-shadow: var(--glow); }
+        .note-card.pinned { border-left: 3px solid var(--accent); }
 
         .note-title { font-weight: 600; margin-bottom: 8px; }
-        .note-preview { color: #aaa; font-size: 13px; }
-        .note-meta { color: #666; font-size: 11px; margin-top: 10px; }
+        .note-preview { color: var(--muted); font-size: 13px; }
+        .note-meta { color: #6f7aa6; font-size: 11px; margin-top: 10px; }
 
         /* Agent cards */
         .agents-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
         }
 
         .agent-card {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
         }
 
         .agent-header {
@@ -775,135 +949,213 @@ HTML = '''
             margin-bottom: 10px;
         }
 
-        .agent-name { font-weight: 600; font-size: 16px; }
-        .agent-status { width: 10px; height: 10px; border-radius: 50%; background: #27ae60; }
-        .agent-type { color: #aaa; font-size: 13px; }
+        .agent-name { font-weight: 600; font-size: 15px; }
+        .agent-status { width: 10px; height: 10px; border-radius: 50%; background: var(--success); }
+        .agent-type { color: var(--muted); font-size: 12px; }
 
         /* Actions */
-        .actions { display: flex; gap: 8px; }
+        .actions { display: flex; gap: 8px; align-items: center; }
+
+        .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
     </style>
 </head>
 <body>
-    <div class="app">
-        <div class="sidebar">
-            <div class="logo">🐕 <span>Cerberus</span></div>
-
-            <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
-            <div class="nav-item" onclick="showPage('leads')">
-                🔔 Job Requests
-                <span class="nav-badge" id="leads-badge">0</span>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">🜂</div>
+                <div>Cerberus <span>Command</span></div>
             </div>
-            <div class="nav-item" onclick="showPage('jobs')">💼 Jobs</div>
-            <div class="nav-item" onclick="showPage('clients')">👥 Clients</div>
-            <div class="nav-item" onclick="showPage('agents')">🤖 Agents</div>
-            <div class="nav-item" onclick="showPage('revenue')">💰 Revenue</div>
-            <div class="nav-item" onclick="showPage('notes')">📝 Notes</div>
-        </div>
+            <div class="nav">
+                <button class="nav-item active" data-page="dashboard">Command Center</button>
+                <button class="nav-item" data-page="leads">
+                    Job Requests
+                    <span class="nav-badge" id="leads-badge">0</span>
+                </button>
+                <button class="nav-item" data-page="jobs">Jobs</button>
+                <button class="nav-item" data-page="clients">Clients</button>
+                <button class="nav-item" data-page="agents">Agents</button>
+                <button class="nav-item" data-page="revenue">Revenue</button>
+                <button class="nav-item" data-page="notes">Notes</button>
+            </div>
+            <div class="sidebar-footer">
+                <p>AI automation agency ops hub. Track revenue, clients, and delivery momentum in one place.</p>
+            </div>
+        </aside>
 
-        <div class="main">
+        <main class="main">
+            <header class="topbar">
+                <div>
+                    <div class="page-title" id="page-title">Command Center</div>
+                    <div class="page-sub" id="page-sub">Real-time revenue, workload, and pipeline health</div>
+                </div>
+                <div class="topbar-right">
+                    <div class="chip" id="today-chip"></div>
+                    <button class="btn btn-secondary" onclick="showModal('lead')">New Lead</button>
+                </div>
+            </header>
+
             <!-- Dashboard -->
             <div id="page-dashboard" class="page active">
-                <h1>Dashboard</h1>
-                <div class="stats-grid" id="stats-grid"></div>
+                <div class="panel-grid" id="stats-grid"></div>
 
-                <h2>Recent Jobs</h2>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr><th>Job</th><th>Client</th><th>Status</th><th>Price</th></tr>
-                        </thead>
-                        <tbody id="recent-jobs"></tbody>
-                    </table>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Revenue Momentum</div>
+                                <div class="stat-value" id="spark-total">$0</div>
+                            </div>
+                            <div class="stat-pill">Last 30 days</div>
+                        </div>
+                        <div class="spark-wrap">
+                            <canvas id="revenue-spark"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Recent Jobs</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Job</th><th>Client</th><th>Status</th><th>Price</th></tr>
+                                </thead>
+                                <tbody id="recent-jobs"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Leads -->
             <div id="page-leads" class="page">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h1>Job Requests</h1>
-                    <button class="btn btn-primary" onclick="showModal('lead')">+ Add Lead</button>
-                </div>
-                <div class="table-container" style="margin-top:20px;">
-                    <table>
-                        <thead>
-                            <tr><th>Source</th><th>Client</th><th>Description</th><th>Budget</th><th>Status</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody id="leads-table"></tbody>
-                    </table>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Inbound Requests</div>
+                                <div class="stat-value" id="leads-count">0</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="showModal('lead')">Add Lead</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Source</th><th>Client</th><th>Description</th><th>Budget</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="leads-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Jobs -->
             <div id="page-jobs" class="page">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h1>Jobs</h1>
-                    <button class="btn btn-primary" onclick="showModal('job')">+ New Job</button>
-                </div>
-                <div class="table-container" style="margin-top:20px;">
-                    <table>
-                        <thead>
-                            <tr><th>Job</th><th>Client</th><th>Agent</th><th>Price</th><th>Status</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody id="jobs-table"></tbody>
-                    </table>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Active Delivery</div>
+                                <div class="stat-value" id="jobs-count">0</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="showModal('job')">New Job</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Job</th><th>Client</th><th>Agent</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="jobs-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Clients -->
             <div id="page-clients" class="page">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h1>Clients</h1>
-                    <button class="btn btn-primary" onclick="showModal('client')">+ Add Client</button>
-                </div>
-                <div class="table-container" style="margin-top:20px;">
-                    <table>
-                        <thead>
-                            <tr><th>Name</th><th>Email</th><th>Company</th><th>Source</th><th>Jobs</th><th>Total</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody id="clients-table"></tbody>
-                    </table>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Client Roster</div>
+                                <div class="stat-value" id="clients-count">0</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="showModal('client')">Add Client</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Name</th><th>Email</th><th>Company</th><th>Source</th><th>Jobs</th><th>Total</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="clients-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Agents -->
             <div id="page-agents" class="page">
-                <h1>AI Agents</h1>
-                <div class="agents-grid" id="agents-grid"></div>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Automation Fleet</div>
+                                <div class="stat-value" id="agents-count">0</div>
+                            </div>
+                        </div>
+                        <div class="agents-grid" id="agents-grid"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Revenue -->
             <div id="page-revenue" class="page">
-                <h1>Revenue</h1>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-revenue">$0</div>
-                        <div class="stat-label">Total Revenue</div>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Total Revenue</div>
+                                <div class="stat-value" id="total-revenue">$0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">This Month</div>
+                                <div class="stat-value" id="month-revenue">$0</div>
+                            </div>
+                        </div>
+                        <div class="spark-wrap" style="height:160px;">
+                            <canvas id="revenue-chart"></canvas>
+                        </div>
+                        <h2>Recent Transactions</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+                                </thead>
+                                <tbody id="transactions-table"></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="month-revenue">$0</div>
-                        <div class="stat-label">This Month</div>
-                    </div>
-                </div>
-                <h2>Recent Transactions</h2>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
-                        </thead>
-                        <tbody id="transactions-table"></tbody>
-                    </table>
                 </div>
             </div>
 
             <!-- Notes -->
             <div id="page-notes" class="page">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h1>Notes</h1>
-                    <button class="btn btn-primary" onclick="showModal('note')">+ Add Note</button>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Notes Vault</div>
+                                <div class="stat-value" id="notes-count">0</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="showModal('note')">Add Note</button>
+                        </div>
+                        <div class="notes-grid" id="notes-grid"></div>
+                    </div>
                 </div>
-                <div class="notes-grid" id="notes-grid" style="margin-top:20px;"></div>
             </div>
-        </div>
+        </main>
     </div>
 
     <!-- Modals -->
@@ -918,84 +1170,167 @@ HTML = '''
     </div>
 
     <script>
-        // Page navigation
-        function showPage(page) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('page-' + page).classList.add('active');
-            event.target.classList.add('active');
+        const PAGE_META = {
+            dashboard: { title: "Command Center", sub: "Real-time revenue, workload, and pipeline health" },
+            leads: { title: "Job Requests", sub: "Inbound opportunities and lead conversions" },
+            jobs: { title: "Jobs", sub: "Delivery pipeline and status control" },
+            clients: { title: "Clients", sub: "Account history and relationship detail" },
+            agents: { title: "Agents", sub: "Automation fleet readiness and availability" },
+            revenue: { title: "Revenue", sub: "Financial performance and transaction history" },
+            notes: { title: "Notes", sub: "Operational context, ideas, and playbooks" }
+        };
+
+        function formatCurrency(value) {
+            return "$" + Number(value || 0).toLocaleString();
+        }
+
+        function setTopbar(page) {
+            const meta = PAGE_META[page];
+            if (!meta) return;
+            document.getElementById("page-title").textContent = meta.title;
+            document.getElementById("page-sub").textContent = meta.sub;
+        }
+
+        function showPage(page, el) {
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+            document.getElementById("page-" + page).classList.add("active");
+            if (el) el.classList.add("active");
+            setTopbar(page);
             loadPageData(page);
         }
 
-        // Load data for page
-        async function loadPageData(page) {
-            if (page === 'dashboard') await loadDashboard();
-            else if (page === 'leads') await loadLeads();
-            else if (page === 'jobs') await loadJobs();
-            else if (page === 'clients') await loadClients();
-            else if (page === 'agents') await loadAgents();
-            else if (page === 'revenue') await loadRevenue();
-            else if (page === 'notes') await loadNotes();
+        document.querySelectorAll(".nav-item").forEach(item => {
+            item.addEventListener("click", () => showPage(item.dataset.page, item));
+        });
+
+        function drawSparkline(canvasId, points, color) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const ratio = window.devicePixelRatio || 1;
+            const w = canvas.clientWidth * ratio;
+            const h = canvas.clientHeight * ratio;
+            canvas.width = w;
+            canvas.height = h;
+            ctx.clearRect(0, 0, w, h);
+
+            if (!points || points.length === 0) {
+                ctx.fillStyle = "rgba(255,255,255,0.08)";
+                ctx.fillRect(0, 0, w, h);
+                return;
+            }
+
+            const max = Math.max(...points.map(p => p.amount));
+            const min = Math.min(...points.map(p => p.amount));
+            const range = max - min || 1;
+            const pad = 8 * ratio;
+            const step = (w - pad * 2) / Math.max(points.length - 1, 1);
+
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                const x = pad + i * step;
+                const y = h - pad - ((p.amount - min) / range) * (h - pad * 2);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.strokeStyle = color || "rgba(87,226,229,0.9)";
+            ctx.lineWidth = 2 * ratio;
+            ctx.shadowBlur = 12 * ratio;
+            ctx.shadowColor = "rgba(87,226,229,0.6)";
+            ctx.stroke();
         }
 
-        // Dashboard
+        async function loadPageData(page) {
+            if (page === "dashboard") await loadDashboard();
+            else if (page === "leads") await loadLeads();
+            else if (page === "jobs") await loadJobs();
+            else if (page === "clients") await loadClients();
+            else if (page === "agents") await loadAgents();
+            else if (page === "revenue") await loadRevenue();
+            else if (page === "notes") await loadNotes();
+        }
+
         async function loadDashboard() {
             const stats = await pywebview.api.get_dashboard_stats();
+            const chart = await pywebview.api.get_revenue_chart(30);
 
-            document.getElementById('stats-grid').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-value">$${stats.total_revenue.toLocaleString()}</div>
+            document.getElementById("stats-grid").innerHTML = `
+                <div class="card stat-card">
                     <div class="stat-label">Total Revenue</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${formatCurrency(stats.total_revenue)}</div>
+                        <div class="stat-pill">All time</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">$${stats.month_revenue.toLocaleString()}</div>
+                <div class="card stat-card">
                     <div class="stat-label">This Month</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${formatCurrency(stats.month_revenue)}</div>
+                        <div class="stat-pill">MTD</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">${stats.total_clients}</div>
+                <div class="card stat-card">
                     <div class="stat-label">Clients</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.total_clients}</div>
+                        <div class="stat-pill">Accounts</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">${stats.active_jobs}</div>
+                <div class="card stat-card">
                     <div class="stat-label">Active Jobs</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.active_jobs}</div>
+                        <div class="stat-pill">In flight</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">${stats.completed_jobs}</div>
+                <div class="card stat-card">
                     <div class="stat-label">Completed</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.completed_jobs}</div>
+                        <div class="stat-pill">Delivered</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">${stats.new_leads}</div>
+                <div class="card stat-card">
                     <div class="stat-label">New Leads</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.new_leads}</div>
+                        <div class="stat-pill">Untriaged</div>
+                    </div>
                 </div>
             `;
 
-            document.getElementById('leads-badge').textContent = stats.new_leads;
+            document.getElementById("leads-badge").textContent = stats.new_leads;
+            document.getElementById("spark-total").textContent = formatCurrency(stats.month_revenue);
 
-            document.getElementById('recent-jobs').innerHTML = stats.recent_jobs.map(j => `
+            document.getElementById("recent-jobs").innerHTML = stats.recent_jobs.map(j => `
                 <tr>
                     <td>${j.title}</td>
-                    <td>${j.client || 'N/A'}</td>
+                    <td>${j.client || "N/A"}</td>
                     <td><span class="status ${j.status}">${j.status}</span></td>
-                    <td>$${j.price}</td>
+                    <td class="mono">${formatCurrency(j.price)}</td>
                 </tr>
-            `).join('');
+            `).join("");
+
+            drawSparkline("revenue-spark", chart, "rgba(87,226,229,0.9)");
         }
 
-        // Leads
         async function loadLeads() {
             const leads = await pywebview.api.get_leads();
-            document.getElementById('leads-table').innerHTML = leads.map(l => `
+            document.getElementById("leads-count").textContent = leads.length;
+            document.getElementById("leads-table").innerHTML = leads.map(l => `
                 <tr>
-                    <td>${l.source || 'Direct'}</td>
+                    <td>${l.source || "Direct"}</td>
                     <td>${l.client_name}</td>
-                    <td>${l.description?.substring(0, 50)}...</td>
-                    <td>${l.budget || 'TBD'}</td>
+                    <td>${(l.description || "").substring(0, 50)}...</td>
+                    <td>${l.budget || "TBD"}</td>
                     <td><span class="status ${l.status}">${l.status}</span></td>
                     <td class="actions">
-                        ${l.status === 'new' ? `<button class="btn btn-small btn-primary" onclick="convertLead(${l.id})">Convert</button>` : ''}
+                        ${l.status === "new" ? `<button class="btn btn-small btn-primary" onclick="convertLead(${l.id})">Convert</button>` : ""}
                     </td>
                 </tr>
-            `).join('');
+            `).join("");
         }
 
         async function convertLead(id) {
@@ -1004,27 +1339,26 @@ HTML = '''
             loadDashboard();
         }
 
-        // Jobs
         async function loadJobs() {
             const jobs = await pywebview.api.get_jobs();
-            const clients = await pywebview.api.get_clients();
+            document.getElementById("jobs-count").textContent = jobs.length;
 
-            document.getElementById('jobs-table').innerHTML = jobs.map(j => `
+            document.getElementById("jobs-table").innerHTML = jobs.map(j => `
                 <tr>
                     <td>${j.title}</td>
-                    <td>${j.client_name || 'N/A'}</td>
-                    <td>${j.agent_type || 'Custom'}</td>
-                    <td>$${j.price}</td>
+                    <td>${j.client_name || "N/A"}</td>
+                    <td>${j.agent_type || "Custom"}</td>
+                    <td class="mono">${formatCurrency(j.price)}</td>
                     <td><span class="status ${j.status}">${j.status}</span></td>
                     <td class="actions">
-                        <select onchange="updateJobStatus(${j.id}, this.value)" style="padding:4px;border-radius:4px;">
-                            <option value="pending" ${j.status==='pending'?'selected':''}>Pending</option>
-                            <option value="in_progress" ${j.status==='in_progress'?'selected':''}>In Progress</option>
-                            <option value="completed" ${j.status==='completed'?'selected':''}>Completed</option>
+                        <select onchange="updateJobStatus(${j.id}, this.value)" style="padding:6px;border-radius:8px;background:rgba(255,255,255,0.08);color:#eaf2ff;border:1px solid rgba(255,255,255,0.1);">
+                            <option value="pending" ${j.status==="pending"?"selected":""}>Pending</option>
+                            <option value="in_progress" ${j.status==="in_progress"?"selected":""}>In Progress</option>
+                            <option value="completed" ${j.status==="completed"?"selected":""}>Completed</option>
                         </select>
                     </td>
                 </tr>
-            `).join('');
+            `).join("");
         }
 
         async function updateJobStatus(id, status) {
@@ -1033,84 +1367,85 @@ HTML = '''
             loadDashboard();
         }
 
-        // Clients
         async function loadClients() {
             const clients = await pywebview.api.get_clients();
-            document.getElementById('clients-table').innerHTML = clients.map(c => `
+            document.getElementById("clients-count").textContent = clients.length;
+            document.getElementById("clients-table").innerHTML = clients.map(c => `
                 <tr>
                     <td>${c.name}</td>
-                    <td>${c.email || '-'}</td>
-                    <td>${c.company || '-'}</td>
-                    <td>${c.source || 'Direct'}</td>
+                    <td>${c.email || "-"}</td>
+                    <td>${c.company || "-"}</td>
+                    <td>${c.source || "Direct"}</td>
                     <td>${c.job_count}</td>
-                    <td>$${c.total_spent}</td>
+                    <td class="mono">${formatCurrency(c.total_spent)}</td>
                     <td class="actions">
                         <button class="btn btn-small btn-danger" onclick="deleteClient(${c.id})">Delete</button>
                     </td>
                 </tr>
-            `).join('');
+            `).join("");
         }
 
         async function deleteClient(id) {
-            if (confirm('Delete this client?')) {
+            if (confirm("Delete this client?")) {
                 await pywebview.api.delete_client(id);
                 loadClients();
             }
         }
 
-        // Agents
         async function loadAgents() {
             const agents = await pywebview.api.get_agents();
-            document.getElementById('agents-grid').innerHTML = agents.map(a => `
+            document.getElementById("agents-count").textContent = agents.length;
+            document.getElementById("agents-grid").innerHTML = agents.map(a => `
                 <div class="agent-card">
                     <div class="agent-header">
                         <span class="agent-name">${a.name}</span>
-                        <span class="agent-status" style="background:${a.enabled?'#27ae60':'#e74c3c'}"></span>
+                        <span class="agent-status" style="background:${a.enabled ? "var(--success)" : "var(--danger)"}"></span>
                     </div>
                     <div class="agent-type">${a.type}</div>
                 </div>
-            `).join('');
+            `).join("");
         }
 
-        // Revenue
         async function loadRevenue() {
             const stats = await pywebview.api.get_dashboard_stats();
             const transactions = await pywebview.api.get_transactions();
+            const chart = await pywebview.api.get_revenue_chart(90);
 
-            document.getElementById('total-revenue').textContent = '$' + stats.total_revenue.toLocaleString();
-            document.getElementById('month-revenue').textContent = '$' + stats.month_revenue.toLocaleString();
+            document.getElementById("total-revenue").textContent = formatCurrency(stats.total_revenue);
+            document.getElementById("month-revenue").textContent = formatCurrency(stats.month_revenue);
 
-            document.getElementById('transactions-table').innerHTML = transactions.map(t => `
+            document.getElementById("transactions-table").innerHTML = transactions.map(t => `
                 <tr>
-                    <td>${t.date?.split('T')[0] || 'N/A'}</td>
-                    <td>${t.description || t.job_title || 'Payment'}</td>
-                    <td style="color:${t.type==='income'?'#27ae60':'#e74c3c'}">
-                        ${t.type==='income'?'+':'-'}$${Math.abs(t.amount)}
+                    <td>${t.date?.split("T")[0] || "N/A"}</td>
+                    <td>${t.description || t.job_title || "Payment"}</td>
+                    <td style="color:${t.type==="income" ? "var(--success)" : "var(--danger)"}">
+                        ${t.type==="income" ? "+" : "-"}${formatCurrency(Math.abs(t.amount))}
                     </td>
                 </tr>
-            `).join('');
+            `).join("");
+
+            drawSparkline("revenue-chart", chart, "rgba(242,184,128,0.9)");
         }
 
-        // Notes
         async function loadNotes() {
             const notes = await pywebview.api.get_notes();
-            document.getElementById('notes-grid').innerHTML = notes.map(n => `
-                <div class="note-card ${n.pinned?'pinned':''}" onclick="editNote(${n.id})">
-                    <div class="note-title">${n.pinned?'📌 ':''}${n.title || 'Untitled'}</div>
-                    <div class="note-preview">${n.content?.substring(0, 100) || ''}</div>
-                    <div class="note-meta">${n.category} • ${n.updated_at?.split('T')[0]}</div>
+            document.getElementById("notes-count").textContent = notes.length;
+            document.getElementById("notes-grid").innerHTML = notes.map(n => `
+                <div class="note-card ${n.pinned ? "pinned" : ""}" onclick="editNote(${n.id})">
+                    <div class="note-title">${n.pinned ? "📌 " : ""}${n.title || "Untitled"}</div>
+                    <div class="note-preview">${(n.content || "").substring(0, 100)}</div>
+                    <div class="note-meta">${n.category} • ${n.updated_at?.split("T")[0]}</div>
                 </div>
-            `).join('');
+            `).join("");
         }
 
-        // Modals
         function showModal(type) {
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modal-title');
-            const body = document.getElementById('modal-body');
+            const modal = document.getElementById("modal");
+            const title = document.getElementById("modal-title");
+            const body = document.getElementById("modal-body");
 
-            if (type === 'lead') {
-                title.textContent = 'Add Job Request';
+            if (type === "lead") {
+                title.textContent = "Add Job Request";
                 body.innerHTML = `
                     <div class="form-group">
                         <label>Source</label>
@@ -1140,8 +1475,8 @@ HTML = '''
                     </div>
                     <button class="btn btn-primary" onclick="saveLead()">Save</button>
                 `;
-            } else if (type === 'client') {
-                title.textContent = 'Add Client';
+            } else if (type === "client") {
+                title.textContent = "Add Client";
                 body.innerHTML = `
                     <div class="form-group">
                         <label>Name</label>
@@ -1161,10 +1496,10 @@ HTML = '''
                     </div>
                     <button class="btn btn-primary" onclick="saveClient()">Save</button>
                 `;
-            } else if (type === 'job') {
+            } else if (type === "job") {
                 loadClientsForJob();
-            } else if (type === 'note') {
-                title.textContent = 'Add Note';
+            } else if (type === "note") {
+                title.textContent = "Add Note";
                 body.innerHTML = `
                     <div class="form-group">
                         <label>Title</label>
@@ -1187,20 +1522,20 @@ HTML = '''
                 `;
             }
 
-            modal.classList.add('active');
+            modal.classList.add("active");
         }
 
         async function loadClientsForJob() {
             const clients = await pywebview.api.get_clients();
-            const title = document.getElementById('modal-title');
-            const body = document.getElementById('modal-body');
+            const title = document.getElementById("modal-title");
+            const body = document.getElementById("modal-body");
 
-            title.textContent = 'Add Job';
+            title.textContent = "Add Job";
             body.innerHTML = `
                 <div class="form-group">
                     <label>Client</label>
                     <select id="job-client">
-                        ${clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                        ${clients.map(c => `<option value="${c.id}">${c.name}</option>`).join("")}
                     </select>
                 </div>
                 <div class="form-group">
@@ -1229,17 +1564,16 @@ HTML = '''
         }
 
         function hideModal() {
-            document.getElementById('modal').classList.remove('active');
+            document.getElementById("modal").classList.remove("active");
         }
 
-        // Save functions
         async function saveLead() {
             await pywebview.api.add_lead(
-                document.getElementById('lead-source').value,
-                document.getElementById('lead-name').value,
-                document.getElementById('lead-email').value,
-                document.getElementById('lead-desc').value,
-                document.getElementById('lead-budget').value
+                document.getElementById("lead-source").value,
+                document.getElementById("lead-name").value,
+                document.getElementById("lead-email").value,
+                document.getElementById("lead-desc").value,
+                document.getElementById("lead-budget").value
             );
             hideModal();
             loadLeads();
@@ -1248,10 +1582,10 @@ HTML = '''
 
         async function saveClient() {
             await pywebview.api.add_client(
-                document.getElementById('client-name').value,
-                document.getElementById('client-email').value,
-                document.getElementById('client-company').value,
-                document.getElementById('client-source').value
+                document.getElementById("client-name").value,
+                document.getElementById("client-email").value,
+                document.getElementById("client-company").value,
+                document.getElementById("client-source").value
             );
             hideModal();
             loadClients();
@@ -1259,11 +1593,11 @@ HTML = '''
 
         async function saveJob() {
             await pywebview.api.add_job(
-                parseInt(document.getElementById('job-client').value),
-                document.getElementById('job-title').value,
-                document.getElementById('job-desc').value,
-                document.getElementById('job-agent').value,
-                parseFloat(document.getElementById('job-price').value)
+                parseInt(document.getElementById("job-client").value),
+                document.getElementById("job-title").value,
+                document.getElementById("job-desc").value,
+                document.getElementById("job-agent").value,
+                parseFloat(document.getElementById("job-price").value)
             );
             hideModal();
             loadJobs();
@@ -1272,16 +1606,22 @@ HTML = '''
 
         async function saveNote() {
             await pywebview.api.add_note(
-                document.getElementById('note-title').value,
-                document.getElementById('note-content').value,
-                document.getElementById('note-category').value
+                document.getElementById("note-title").value,
+                document.getElementById("note-content").value,
+                document.getElementById("note-category").value
             );
             hideModal();
             loadNotes();
         }
 
-        // Init
-        window.addEventListener('pywebviewready', () => {
+        window.addEventListener("pywebviewready", () => {
+            const now = new Date();
+            document.getElementById("today-chip").textContent = now.toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric"
+            });
+            setTopbar("dashboard");
             loadDashboard();
         });
     </script>

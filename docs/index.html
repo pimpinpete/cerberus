@@ -3,406 +3,862 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cerberus - AI Agents for Business Automation</title>
-    <meta name="description" content="Custom AI agents that automate email, data entry, and document processing. Save 10+ hours per week on repetitive tasks.">
+    <title>Cerberus Command Center</title>
     <style>
+        @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+        :root {
+            color-scheme: dark;
+            --bg-0: #06070d;
+            --bg-1: #0b1021;
+            --bg-2: #101a32;
+            --glass: rgba(16, 24, 44, 0.6);
+            --glass-strong: rgba(16, 24, 44, 0.75);
+            --line: rgba(255, 255, 255, 0.08);
+            --text: #eaf2ff;
+            --muted: #98a3c7;
+            --accent: #57e2e5;
+            --accent-2: #f2b880;
+            --accent-3: #9ef0b0;
+            --danger: #ff6b6b;
+            --warn: #ffd166;
+            --success: #2fe3a6;
+            --shadow: 0 24px 60px rgba(5, 10, 24, 0.65);
+            --glow: 0 0 30px rgba(87, 226, 229, 0.25);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: "Space Grotesk", "Sora", "Manrope", system-ui, sans-serif;
+            background: radial-gradient(circle at 10% 10%, #1b2b53 0%, transparent 45%),
+                        radial-gradient(circle at 80% 20%, #2a1345 0%, transparent 40%),
+                        radial-gradient(circle at 80% 90%, #133d38 0%, transparent 50%),
+                        linear-gradient(160deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden;
         }
 
-        /* Hero */
-        .hero {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
-            padding: 80px 20px;
-            text-align: center;
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(87, 226, 229, 0.08), transparent 45%),
+                        radial-gradient(circle at 70% 80%, rgba(242, 184, 128, 0.08), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        .hero h1 span { color: #ffd700; }
-
-        .hero p {
-            font-size: 1.3rem;
-            max-width: 600px;
-            margin: 0 auto 30px;
-            opacity: 0.9;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 15px 40px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: transform 0.2s;
-        }
-
-        .btn:hover { transform: translateY(-2px); }
-
-        .btn-primary {
-            background: #ffd700;
-            color: #1a1a2e;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-            margin-left: 15px;
-        }
-
-        /* Stats */
-        .stats {
+        .app-shell {
             display: flex;
-            justify-content: center;
-            gap: 60px;
-            margin-top: 50px;
-            flex-wrap: wrap;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
-        .stat {
-            text-align: center;
+        .sidebar {
+            width: 250px;
+            padding: 28px 22px;
+            background: rgba(7, 12, 26, 0.75);
+            border-right: 1px solid var(--line);
+            backdrop-filter: blur(18px);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
         }
 
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        .stat-label {
-            opacity: 0.8;
-        }
-
-        /* Section */
-        .section {
-            padding: 80px 20px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .section h2 {
-            font-size: 2.2rem;
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        /* Agents */
-        .agents {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .agent-card {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-        }
-
-        .agent-card h3 {
-            font-size: 1.4rem;
-            margin-bottom: 15px;
+        .logo {
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            font-size: 20px;
         }
 
-        .agent-card ul {
-            list-style: none;
-            margin-top: 15px;
+        .logo-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(87, 226, 229, 0.4), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(87, 226, 229, 0.5);
+            display: grid;
+            place-items: center;
+            box-shadow: var(--glow);
+            font-size: 18px;
         }
 
-        .agent-card li {
-            padding: 8px 0;
-            padding-left: 25px;
-            position: relative;
-        }
+        .logo span { color: var(--accent); }
 
-        .agent-card li::before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #27ae60;
-            font-weight: bold;
-        }
-
-        /* How it works */
-        .steps {
+        .nav {
             display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 30px;
+            flex-direction: column;
+            gap: 6px;
         }
 
-        .step {
-            flex: 1;
-            min-width: 200px;
-            text-align: center;
-        }
-
-        .step-num {
-            width: 50px;
-            height: 50px;
-            background: #1a1a2e;
-            color: #ffd700;
-            border-radius: 50%;
+        .nav-item {
+            border: 1px solid transparent;
+            padding: 12px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0 auto 15px;
+            gap: 10px;
+            background: transparent;
+            color: var(--text);
+            font-size: 14px;
         }
 
-        .step h4 { margin-bottom: 10px; }
-
-        /* Pricing */
-        .pricing {
-            background: #f8f9fa;
+        .nav-item:hover {
+            background: rgba(87, 226, 229, 0.08);
+            border-color: rgba(87, 226, 229, 0.3);
         }
 
-        .pricing-cards {
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(87, 226, 229, 0.25), rgba(87, 226, 229, 0.05));
+            border-color: rgba(87, 226, 229, 0.5);
+            box-shadow: var(--glow);
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ffd4d4;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 107, 107, 0.4);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line);
+        }
+
+        .sidebar-footer p {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .main {
+            flex: 1;
+            padding: 28px 32px 32px;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .page-sub {
+            color: var(--muted);
+            margin-top: 6px;
+            font-size: 13px;
+        }
+
+        .topbar-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chip {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { margin: 20px 0 12px; font-size: 16px; color: var(--muted); font-weight: 600; }
+
+        .panel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            max-width: 1100px;
-            margin: 0 auto;
+            gap: 18px;
+            margin-bottom: 24px;
         }
 
-        .pricing-card {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
         }
 
-        .pricing-card.featured {
-            border: 3px solid #ffd700;
-            transform: scale(1.05);
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .pricing-card h3 {
-            font-size: 1.3rem;
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .stat-pill {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(87, 226, 229, 0.4);
+            color: var(--accent);
+            background: rgba(87, 226, 229, 0.08);
+        }
+
+        .spark-wrap {
+            height: 120px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .table-container {
+            background: var(--glass-strong);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        th { color: var(--muted); font-weight: 500; background: rgba(255,255,255,0.02); }
+        tr:hover { background: rgba(255,255,255,0.04); }
+
+        .status {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .status.pending { background: rgba(255, 209, 102, 0.2); color: var(--warn); border: 1px solid rgba(255, 209, 102, 0.5); }
+        .status.in_progress { background: rgba(87, 226, 229, 0.2); color: var(--accent); border: 1px solid rgba(87, 226, 229, 0.5); }
+        .status.completed { background: rgba(47, 227, 166, 0.2); color: var(--success); border: 1px solid rgba(47, 227, 166, 0.5); }
+        .status.new { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: 1px solid rgba(255, 107, 107, 0.5); }
+        .status.converted { background: rgba(158, 240, 176, 0.2); color: var(--accent-3); border: 1px solid rgba(158, 240, 176, 0.5); }
+
+        .btn {
+            padding: 10px 18px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(87, 226, 229, 0.6), rgba(87, 226, 229, 0.2));
+            border-color: rgba(87, 226, 229, 0.6);
+            color: #07131c;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--glow); }
+
+        .btn-secondary { background: rgba(255,255,255,0.06); border-color: var(--line); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+        .btn-danger { background: rgba(255, 107, 107, 0.2); color: #ffdcdc; border-color: rgba(255, 107, 107, 0.5); }
+        .btn-small { padding: 6px 12px; font-size: 11px; }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+        }
+
+        .note-card {
+            background: rgba(255,255,255,0.04);
+            padding: 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--line);
+        }
+
+        .note-card:hover { transform: translateY(-2px); box-shadow: var(--glow); }
+        .note-card.pinned { border-left: 3px solid var(--accent); }
+
+        .note-title { font-weight: 600; margin-bottom: 8px; }
+        .note-preview { color: var(--muted); font-size: 13px; }
+        .note-meta { color: #6f7aa6; font-size: 11px; margin-top: 10px; }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .agent-card {
+            background: rgba(255,255,255,0.05);
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
         }
 
-        .pricing-card .price {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #1a1a2e;
-            margin: 20px 0;
-        }
+        .agent-name { font-weight: 600; font-size: 15px; }
+        .agent-status { width: 10px; height: 10px; border-radius: 50%; background: var(--success); }
+        .agent-type { color: var(--muted); font-size: 12px; }
 
-        .pricing-card .price span {
-            font-size: 1rem;
-            color: #666;
-        }
+        .actions { display: flex; gap: 8px; align-items: center; }
 
-        .pricing-card ul {
-            list-style: none;
-            margin: 20px 0;
-            text-align: left;
-        }
+        .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-        .pricing-card li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        /* CTA */
-        .cta {
-            background: #1a1a2e;
-            color: white;
-            text-align: center;
-            padding: 80px 20px;
-        }
-
-        .cta h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-
-        .cta p {
-            margin-bottom: 30px;
-            opacity: 0.9;
-        }
-
-        /* Footer */
-        footer {
-            background: #111;
-            color: #aaa;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        footer a { color: #ffd700; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
-            .btn-secondary { margin: 15px 0 0 0; display: block; }
-            .stats { gap: 30px; }
-            .pricing-card.featured { transform: none; }
+        @media (max-width: 960px) {
+            body { overflow: auto; }
+            .app-shell { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; flex-direction: row; align-items: center; overflow-x: auto; }
+            .nav { flex-direction: row; flex-wrap: nowrap; }
+            .sidebar-footer { display: none; }
         }
     </style>
 </head>
 <body>
-    <!-- Hero -->
-    <section class="hero">
-        <h1>🐕 <span>Cerberus</span></h1>
-        <p>AI agents that handle your busywork. Automate email, data entry, and document processing - so you can focus on what matters.</p>
-        <a href="#contact" class="btn btn-primary">Get a Free Consultation</a>
-        <a href="#agents" class="btn btn-secondary">See How It Works</a>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">🜂</div>
+                <div>Cerberus <span>Command</span></div>
+            </div>
+            <div class="nav">
+                <button class="nav-item active" data-page="dashboard">Command Center</button>
+                <button class="nav-item" data-page="leads">
+                    Job Requests
+                    <span class="nav-badge" id="leads-badge">0</span>
+                </button>
+                <button class="nav-item" data-page="jobs">Jobs</button>
+                <button class="nav-item" data-page="clients">Clients</button>
+                <button class="nav-item" data-page="agents">Agents</button>
+                <button class="nav-item" data-page="revenue">Revenue</button>
+                <button class="nav-item" data-page="notes">Notes</button>
+            </div>
+            <div class="sidebar-footer">
+                <p>AI automation agency ops hub. Track revenue, clients, and delivery momentum in one place.</p>
+            </div>
+        </aside>
 
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-value">10+</div>
-                <div class="stat-label">Hours saved per week</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value">90%</div>
-                <div class="stat-label">Reduction in manual work</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value">24/7</div>
-                <div class="stat-label">Always working for you</div>
-            </div>
-        </div>
-    </section>
+        <main class="main">
+            <header class="topbar">
+                <div>
+                    <div class="page-title" id="page-title">Command Center</div>
+                    <div class="page-sub" id="page-sub">Real-time revenue, workload, and pipeline health</div>
+                </div>
+                <div class="topbar-right">
+                    <div class="chip" id="today-chip"></div>
+                    <button class="btn btn-secondary">New Lead</button>
+                </div>
+            </header>
 
-    <!-- Agents -->
-    <section class="section" id="agents">
-        <h2>Three AI Agents, Infinite Possibilities</h2>
-        <div class="agents">
-            <div class="agent-card">
-                <h3>📧 Email Manager</h3>
-                <p>Never miss an important email again. Your AI assistant handles inbox chaos.</p>
-                <ul>
-                    <li>Auto-categorize incoming emails</li>
-                    <li>Extract action items automatically</li>
-                    <li>Draft responses for your approval</li>
-                    <li>Daily inbox summaries</li>
-                    <li>Schedule follow-ups</li>
-                </ul>
-            </div>
-            <div class="agent-card">
-                <h3>📊 Data Entry</h3>
-                <p>Stop copying data by hand. Drop documents, get structured data.</p>
-                <ul>
-                    <li>Extract from PDFs & images</li>
-                    <li>Populate spreadsheets automatically</li>
-                    <li>Validate against your rules</li>
-                    <li>Watch folders for new files</li>
-                    <li>Zero manual entry errors</li>
-                </ul>
-            </div>
-            <div class="agent-card">
-                <h3>📄 Document Processor</h3>
-                <p>Turn document chaos into organized intelligence.</p>
-                <ul>
-                    <li>Summarize long documents</li>
-                    <li>Extract key information</li>
-                    <li>Auto-file to correct folders</li>
-                    <li>Generate reports</li>
-                    <li>Make everything searchable</li>
-                </ul>
-            </div>
-        </div>
-    </section>
+            <div id="page-dashboard" class="page active">
+                <div class="panel-grid" id="stats-grid"></div>
 
-    <!-- How it works -->
-    <section class="section" style="background: #f8f9fa;">
-        <h2>How It Works</h2>
-        <div class="steps">
-            <div class="step">
-                <div class="step-num">1</div>
-                <h4>Discovery Call</h4>
-                <p>15-minute call to understand your workflow and pain points</p>
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Revenue Momentum</div>
+                                <div class="stat-value" id="spark-total">$0</div>
+                            </div>
+                            <div class="stat-pill">Last 30 days</div>
+                        </div>
+                        <div class="spark-wrap">
+                            <canvas id="revenue-spark"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Recent Jobs</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Job</th><th>Client</th><th>Status</th><th>Price</th></tr>
+                                </thead>
+                                <tbody id="recent-jobs"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="step">
-                <div class="step-num">2</div>
-                <h4>Custom Build</h4>
-                <p>I build an AI agent tailored to your specific needs</p>
-            </div>
-            <div class="step">
-                <div class="step-num">3</div>
-                <h4>Test & Refine</h4>
-                <p>You test it, I refine until it's perfect</p>
-            </div>
-            <div class="step">
-                <div class="step-num">4</div>
-                <h4>Deploy & Support</h4>
-                <p>Handoff with docs + ongoing support</p>
-            </div>
-        </div>
-    </section>
 
-    <!-- Pricing -->
-    <section class="section pricing">
-        <h2>Simple Pricing</h2>
-        <div class="pricing-cards">
-            <div class="pricing-card">
-                <h3>Starter</h3>
-                <div class="price">$500 <span>one-time</span></div>
-                <ul>
-                    <li>1 AI agent (email OR data entry)</li>
-                    <li>Basic configuration</li>
-                    <li>14 days support</li>
-                    <li>Documentation</li>
-                </ul>
-                <a href="#contact" class="btn btn-primary" style="width:100%">Get Started</a>
+            <div id="page-leads" class="page">
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Inbound Requests</div>
+                                <div class="stat-value" id="leads-count">0</div>
+                            </div>
+                            <button class="btn btn-primary">Add Lead</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Source</th><th>Client</th><th>Description</th><th>Budget</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="leads-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="pricing-card featured">
-                <h3>Professional</h3>
-                <div class="price">$2,000 <span>one-time</span></div>
-                <ul>
-                    <li>Custom AI agent</li>
-                    <li>3 integrations included</li>
-                    <li>30 days support</li>
-                    <li>Priority response</li>
-                    <li>Video training</li>
-                </ul>
-                <a href="#contact" class="btn btn-primary" style="width:100%">Get Started</a>
-            </div>
-            <div class="pricing-card">
-                <h3>Enterprise</h3>
-                <div class="price">$5,000+ <span>custom</span></div>
-                <ul>
-                    <li>Multi-agent system</li>
-                    <li>Unlimited integrations</li>
-                    <li>Ongoing maintenance</li>
-                    <li>Dedicated support</li>
-                    <li>Custom training</li>
-                </ul>
-                <a href="#contact" class="btn btn-primary" style="width:100%">Contact Us</a>
-            </div>
-        </div>
-    </section>
 
-    <!-- CTA -->
-    <section class="cta" id="contact">
-        <h2>Ready to Automate?</h2>
-        <p>Book a free 15-minute consultation to see if Cerberus is right for your business.</p>
-        <a href="mailto:apetersongroup@gmail.com?subject=Cerberus%20Inquiry" class="btn btn-primary">Email Me</a>
-        <p style="margin-top: 30px; font-size: 0.9rem;">Or find me on <a href="#" style="color: #ffd700;">Upwork</a> | <a href="#" style="color: #ffd700;">Fiverr</a></p>
-    </section>
+            <div id="page-jobs" class="page">
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Active Delivery</div>
+                                <div class="stat-value" id="jobs-count">0</div>
+                            </div>
+                            <button class="btn btn-primary">New Job</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Job</th><th>Client</th><th>Agent</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="jobs-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>🐕 Cerberus - AI Agents for Business Automation</p>
-        <p style="margin-top: 10px;">Built by <a href="mailto:apetersongroup@gmail.com">Andrew Peterson</a></p>
-    </footer>
+            <div id="page-clients" class="page">
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Client Roster</div>
+                                <div class="stat-value" id="clients-count">0</div>
+                            </div>
+                            <button class="btn btn-primary">Add Client</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Name</th><th>Email</th><th>Company</th><th>Source</th><th>Jobs</th><th>Total</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="clients-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-agents" class="page">
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Automation Fleet</div>
+                                <div class="stat-value" id="agents-count">0</div>
+                            </div>
+                        </div>
+                        <div class="agents-grid" id="agents-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-revenue" class="page">
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Total Revenue</div>
+                                <div class="stat-value" id="total-revenue">$0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">This Month</div>
+                                <div class="stat-value" id="month-revenue">$0</div>
+                            </div>
+                        </div>
+                        <div class="spark-wrap" style="height:160px;">
+                            <canvas id="revenue-chart"></canvas>
+                        </div>
+                        <h2>Recent Transactions</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+                                </thead>
+                                <tbody id="transactions-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-notes" class="page">
+                <div class="panel-grid">
+                    <div class="card">
+                        <div class="stat-row" style="margin-bottom:12px;">
+                            <div>
+                                <div class="stat-label">Notes Vault</div>
+                                <div class="stat-value" id="notes-count">0</div>
+                            </div>
+                            <button class="btn btn-primary">Add Note</button>
+                        </div>
+                        <div class="notes-grid" id="notes-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const DATA = {
+            stats: {
+                total_revenue: 284000,
+                month_revenue: 42800,
+                total_clients: 18,
+                active_jobs: 7,
+                completed_jobs: 41,
+                new_leads: 4
+            },
+            recent_jobs: [
+                { title: "Workflow automations", client: "Lumen Media", status: "in_progress", price: 5400 },
+                { title: "CRM triage bot", client: "Harper Legal", status: "pending", price: 3200 },
+                { title: "Invoice classifier", client: "Citrine Labs", status: "completed", price: 7800 },
+                { title: "Lead enrichment", client: "Sage Partners", status: "completed", price: 4600 }
+            ],
+            leads: [
+                { source: "Upwork", client_name: "Atlas Realty", description: "Automate property lead intake", budget: "$4k", status: "new" },
+                { source: "Fiverr", client_name: "Morning Brew", description: "Email sequence automation", budget: "$1.2k", status: "new" },
+                { source: "Referral", client_name: "Northwind", description: "Ops dashboard upgrade", budget: "$8k", status: "converted" }
+            ],
+            jobs: [
+                { title: "Client onboarding flow", client_name: "Lumen Media", agent_type: "automation", price: 5200, status: "in_progress" },
+                { title: "Expense audit bot", client_name: "Harper Legal", agent_type: "data_entry", price: 2900, status: "pending" },
+                { title: "Document sorter", client_name: "Citrine Labs", agent_type: "doc_processor", price: 7800, status: "completed" }
+            ],
+            clients: [
+                { name: "Lumen Media", email: "ops@lumen.co", company: "Lumen", source: "Referral", job_count: 3, total_spent: 16200 },
+                { name: "Harper Legal", email: "team@harper.io", company: "Harper", source: "Upwork", job_count: 2, total_spent: 6100 },
+                { name: "Citrine Labs", email: "hello@citrine.ai", company: "Citrine", source: "Direct", job_count: 4, total_spent: 20100 }
+            ],
+            agents: [
+                { name: "LedgerPulse", type: "Finance", enabled: true },
+                { name: "ClientSignal", type: "CRM", enabled: true },
+                { name: "OpsOracle", type: "Workflow", enabled: false }
+            ],
+            transactions: [
+                { date: "2026-02-04", description: "Payment for Invoice classifier", amount: 7800, type: "income" },
+                { date: "2026-01-22", description: "Payment for Workflow automations", amount: 5400, type: "income" },
+                { date: "2026-01-18", description: "Contractor payout", amount: -1200, type: "expense" }
+            ],
+            notes: [
+                { title: "February targets", content: "Close 6 new client accounts and expand 2 retainers.", category: "todo", pinned: true, updated_at: "2026-02-05" },
+                { title: "Automation ideas", content: "Build intake form -> Slack triage -> auto quote.", category: "ideas", pinned: false, updated_at: "2026-02-02" }
+            ],
+            revenue: Array.from({ length: 30 }).map((_, i) => ({
+                date: i,
+                amount: Math.max(0, Math.round(2000 + Math.sin(i / 3) * 1200 + Math.random() * 1400))
+            }))
+        };
+
+        const PAGE_META = {
+            dashboard: { title: "Command Center", sub: "Real-time revenue, workload, and pipeline health" },
+            leads: { title: "Job Requests", sub: "Inbound opportunities and lead conversions" },
+            jobs: { title: "Jobs", sub: "Delivery pipeline and status control" },
+            clients: { title: "Clients", sub: "Account history and relationship detail" },
+            agents: { title: "Agents", sub: "Automation fleet readiness and availability" },
+            revenue: { title: "Revenue", sub: "Financial performance and transaction history" },
+            notes: { title: "Notes", sub: "Operational context, ideas, and playbooks" }
+        };
+
+        function formatCurrency(value) {
+            return "$" + Number(value || 0).toLocaleString();
+        }
+
+        function setTopbar(page) {
+            const meta = PAGE_META[page];
+            if (!meta) return;
+            document.getElementById("page-title").textContent = meta.title;
+            document.getElementById("page-sub").textContent = meta.sub;
+        }
+
+        function showPage(page, el) {
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+            document.getElementById("page-" + page).classList.add("active");
+            if (el) el.classList.add("active");
+            setTopbar(page);
+        }
+
+        document.querySelectorAll(".nav-item").forEach(item => {
+            item.addEventListener("click", () => showPage(item.dataset.page, item));
+        });
+
+        function drawSparkline(canvasId, points, color) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const ratio = window.devicePixelRatio || 1;
+            const w = canvas.clientWidth * ratio;
+            const h = canvas.clientHeight * ratio;
+            canvas.width = w;
+            canvas.height = h;
+            ctx.clearRect(0, 0, w, h);
+
+            if (!points || points.length === 0) {
+                ctx.fillStyle = "rgba(255,255,255,0.08)";
+                ctx.fillRect(0, 0, w, h);
+                return;
+            }
+
+            const max = Math.max(...points.map(p => p.amount));
+            const min = Math.min(...points.map(p => p.amount));
+            const range = max - min || 1;
+            const pad = 8 * ratio;
+            const step = (w - pad * 2) / Math.max(points.length - 1, 1);
+
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                const x = pad + i * step;
+                const y = h - pad - ((p.amount - min) / range) * (h - pad * 2);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.strokeStyle = color || "rgba(87,226,229,0.9)";
+            ctx.lineWidth = 2 * ratio;
+            ctx.shadowBlur = 12 * ratio;
+            ctx.shadowColor = "rgba(87,226,229,0.6)";
+            ctx.stroke();
+        }
+
+        function loadDashboard() {
+            const stats = DATA.stats;
+            document.getElementById("stats-grid").innerHTML = `
+                <div class="card stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${formatCurrency(stats.total_revenue)}</div>
+                        <div class="stat-pill">All time</div>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${formatCurrency(stats.month_revenue)}</div>
+                        <div class="stat-pill">MTD</div>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-label">Clients</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.total_clients}</div>
+                        <div class="stat-pill">Accounts</div>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-label">Active Jobs</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.active_jobs}</div>
+                        <div class="stat-pill">In flight</div>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-label">Completed</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.completed_jobs}</div>
+                        <div class="stat-pill">Delivered</div>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-label">New Leads</div>
+                    <div class="stat-row">
+                        <div class="stat-value">${stats.new_leads}</div>
+                        <div class="stat-pill">Untriaged</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById("leads-badge").textContent = stats.new_leads;
+            document.getElementById("spark-total").textContent = formatCurrency(stats.month_revenue);
+            document.getElementById("recent-jobs").innerHTML = DATA.recent_jobs.map(j => `
+                <tr>
+                    <td>${j.title}</td>
+                    <td>${j.client || "N/A"}</td>
+                    <td><span class="status ${j.status}">${j.status}</span></td>
+                    <td class="mono">${formatCurrency(j.price)}</td>
+                </tr>
+            `).join("");
+
+            drawSparkline("revenue-spark", DATA.revenue, "rgba(87,226,229,0.9)");
+        }
+
+        function loadLeads() {
+            document.getElementById("leads-count").textContent = DATA.leads.length;
+            document.getElementById("leads-table").innerHTML = DATA.leads.map(l => `
+                <tr>
+                    <td>${l.source || "Direct"}</td>
+                    <td>${l.client_name}</td>
+                    <td>${(l.description || "").substring(0, 50)}...</td>
+                    <td>${l.budget || "TBD"}</td>
+                    <td><span class="status ${l.status}">${l.status}</span></td>
+                    <td class="actions">
+                        ${l.status === "new" ? `<button class="btn btn-small btn-primary">Convert</button>` : ""}
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function loadJobs() {
+            document.getElementById("jobs-count").textContent = DATA.jobs.length;
+            document.getElementById("jobs-table").innerHTML = DATA.jobs.map(j => `
+                <tr>
+                    <td>${j.title}</td>
+                    <td>${j.client_name || "N/A"}</td>
+                    <td>${j.agent_type || "Custom"}</td>
+                    <td class="mono">${formatCurrency(j.price)}</td>
+                    <td><span class="status ${j.status}">${j.status}</span></td>
+                    <td class="actions">
+                        <select style="padding:6px;border-radius:8px;background:rgba(255,255,255,0.08);color:#eaf2ff;border:1px solid rgba(255,255,255,0.1);">
+                            <option>${j.status}</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function loadClients() {
+            document.getElementById("clients-count").textContent = DATA.clients.length;
+            document.getElementById("clients-table").innerHTML = DATA.clients.map(c => `
+                <tr>
+                    <td>${c.name}</td>
+                    <td>${c.email || "-"}</td>
+                    <td>${c.company || "-"}</td>
+                    <td>${c.source || "Direct"}</td>
+                    <td>${c.job_count}</td>
+                    <td class="mono">${formatCurrency(c.total_spent)}</td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-danger">Delete</button>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function loadAgents() {
+            document.getElementById("agents-count").textContent = DATA.agents.length;
+            document.getElementById("agents-grid").innerHTML = DATA.agents.map(a => `
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <span class="agent-name">${a.name}</span>
+                        <span class="agent-status" style="background:${a.enabled ? "var(--success)" : "var(--danger)"}"></span>
+                    </div>
+                    <div class="agent-type">${a.type}</div>
+                </div>
+            `).join("");
+        }
+
+        function loadRevenue() {
+            document.getElementById("total-revenue").textContent = formatCurrency(DATA.stats.total_revenue);
+            document.getElementById("month-revenue").textContent = formatCurrency(DATA.stats.month_revenue);
+            document.getElementById("transactions-table").innerHTML = DATA.transactions.map(t => `
+                <tr>
+                    <td>${t.date}</td>
+                    <td>${t.description}</td>
+                    <td style="color:${t.amount >= 0 ? "var(--success)" : "var(--danger)"}">
+                        ${t.amount >= 0 ? "+" : "-"}${formatCurrency(Math.abs(t.amount))}
+                    </td>
+                </tr>
+            `).join("");
+
+            drawSparkline("revenue-chart", DATA.revenue, "rgba(242,184,128,0.9)");
+        }
+
+        function loadNotes() {
+            document.getElementById("notes-count").textContent = DATA.notes.length;
+            document.getElementById("notes-grid").innerHTML = DATA.notes.map(n => `
+                <div class="note-card ${n.pinned ? "pinned" : ""}">
+                    <div class="note-title">${n.pinned ? "📌 " : ""}${n.title || "Untitled"}</div>
+                    <div class="note-preview">${(n.content || "").substring(0, 100)}</div>
+                    <div class="note-meta">${n.category} • ${n.updated_at}</div>
+                </div>
+            `).join("");
+        }
+
+        function init() {
+            const now = new Date();
+            document.getElementById("today-chip").textContent = now.toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric"
+            });
+            setTopbar("dashboard");
+            loadDashboard();
+            loadLeads();
+            loadJobs();
+            loadClients();
+            loadAgents();
+            loadRevenue();
+            loadNotes();
+        }
+
+        init();
+    </script>
 </body>
 </html>
