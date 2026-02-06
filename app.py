@@ -593,15 +593,27 @@ HTML = '''
         }
 
         .logo-mark {
-            width: 34px;
-            height: 34px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(87, 226, 229, 0.4), rgba(255, 255, 255, 0.05));
-            border: 1px solid rgba(87, 226, 229, 0.5);
-            display: grid;
-            place-items: center;
-            box-shadow: var(--glow);
-            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(145deg, rgba(20, 25, 35, 0.95), rgba(30, 40, 55, 0.9));
+            border: 1.5px solid rgba(87, 226, 229, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 0 20px rgba(87, 226, 229, 0.3),
+                0 0 40px rgba(87, 226, 229, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .logo-mark svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--accent);
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 3px rgba(87, 226, 229, 0.5));
         }
 
         .logo span { color: var(--accent); }
@@ -963,7 +975,11 @@ HTML = '''
     <div class="app-shell">
         <aside class="sidebar">
             <div class="logo">
-                <div class="logo-mark">🜂</div>
+                <div class="logo-mark">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4 L21 20 L3 20 Z" stroke-linejoin="round"/>
+                    </svg>
+                </div>
                 <div>Cerberus <span>Command</span></div>
             </div>
             <div class="nav">
@@ -1155,6 +1171,7 @@ HTML = '''
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 

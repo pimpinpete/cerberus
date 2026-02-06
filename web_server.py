@@ -5,12 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from cerberus_api import CerberusAPI
 
 BASE_DIR = Path(__file__).parent
-INDEX_PATH = BASE_DIR / "docs" / "index.html"
+STATIC_DIR = BASE_DIR / "docs"
 
 app = FastAPI(title="Cerberus Command Center")
 app.add_middleware(
@@ -22,13 +22,6 @@ app.add_middleware(
 )
 
 api = CerberusAPI()
-
-
-@app.get("/", response_class=HTMLResponse)
-def index():
-    if INDEX_PATH.exists():
-        return INDEX_PATH.read_text(encoding="utf-8")
-    return "<h1>Cerberus</h1><p>index.html not found.</p>"
 
 
 @app.get("/api/dashboard")
@@ -69,3 +62,6 @@ def transactions(limit: int = 50):
 @app.get("/api/revenue")
 def revenue(days: int = 30):
     return api.get_revenue_chart(days=days)
+
+
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
