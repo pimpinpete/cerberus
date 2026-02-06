@@ -136,8 +136,11 @@ class Cerberus:
         if not agent_config.enabled:
             return {"status": "error", "message": f"Agent '{agent_name}' is disabled"}
 
-        # Log the action
-        log_action(f"Running agent: {agent_name}", {"task": task, **kwargs})
+        # Log the action (convert to JSON-safe)
+        try:
+            log_action(f"Running agent: {agent_name}", {"task": task, "agent": agent_name})
+        except Exception:
+            pass  # Ignore logging errors
 
         # Route to appropriate agent type
         if agent_config.type == AgentType.EMAIL_MANAGER:

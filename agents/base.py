@@ -82,13 +82,17 @@ class CerberusAgent(ABC):
         if context:
             full_prompt = f"Context: {context}\n\nTask: {prompt}"
 
-        model = select_model(full_prompt)
-        log_action(f"Agent {self.name} querying AI", {"model": model, "prompt_length": len(full_prompt)})
+        model_config = select_model(full_prompt)
+        model_name = model_config.name if hasattr(model_config, 'name') else str(model_config)
+        try:
+            log_action(f"Agent {self.name} querying AI", {"model": model_name, "prompt_length": len(full_prompt)})
+        except Exception:
+            pass  # Ignore logging errors
 
         # Use Claude CLI for actual inference
         import subprocess
         result = subprocess.run(
-            ["claude", "-p", full_prompt, "--model", model],
+            ["claude", "-p", full_prompt],
             capture_output=True, text=True, timeout=60
         )
 
@@ -100,7 +104,10 @@ class CerberusAgent(ABC):
 
     def log(self, message: str, data: Optional[Dict[str, Any]] = None):
         """Log an action for observability."""
-        log_action(f"[{self.name}] {message}", data or {})
+        try:
+            log_action(f"[{self.name}] {message}", data or {})
+        except Exception:
+            pass  # Ignore logging errors
 
     def error(self, message: str, exception: Optional[Exception] = None):
         """Log an error."""
