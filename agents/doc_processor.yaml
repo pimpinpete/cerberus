@@ -1,0 +1,94 @@
+name: doc_processor
+type: doc_processor
+enabled: true
+
+settings:
+  # Document categories and filing destinations
+  categories:
+    invoices: ~/Documents/Invoices
+    contracts: ~/Documents/Contracts
+    reports: ~/Documents/Reports
+    receipts: ~/Documents/Receipts
+    personal: ~/Documents/Personal
+    legal: ~/Documents/Legal
+    financial: ~/Documents/Financial
+    other: ~/Documents/Other
+
+  # Summary preferences
+  summary_length: medium  # short, medium, long
+
+  # Supported formats
+  supported_formats:
+    - .pdf
+    - .docx
+    - .doc
+    - .txt
+    - .md
+    - .rtf
+
+  # Information types to extract
+  info_types:
+    - dates
+    - names
+    - amounts
+    - organizations
+    - locations
+    - email_addresses
+    - phone_numbers
+    - urls
+
+  # Category detection keywords
+  category_keywords:
+    invoices:
+      - invoice
+      - bill
+      - payment due
+      - amount owed
+    contracts:
+      - agreement
+      - contract
+      - terms and conditions
+      - hereby agree
+    receipts:
+      - receipt
+      - transaction
+      - purchase
+      - payment received
+    legal:
+      - legal
+      - attorney
+      - court
+      - lawsuit
+    financial:
+      - bank
+      - statement
+      - balance
+      - account
+
+  # Report templates
+  report_templates:
+    summary:
+      sections:
+        - executive_summary
+        - key_findings
+        - recommendations
+
+    analysis:
+      sections:
+        - overview
+        - detailed_analysis
+        - conclusions
+
+    comparison:
+      sections:
+        - overview
+        - similarities
+        - differences
+        - recommendations
+
+  # Processing options
+  processing:
+    preserve_original: true
+    create_backup: true
+    add_timestamp: true
+    auto_rename: false

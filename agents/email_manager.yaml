@@ -1,0 +1,63 @@
+name: email_manager
+type: email_manager
+enabled: true
+
+settings:
+  # Email categories for auto-sorting
+  categories:
+    - urgent
+    - work
+    - personal
+    - newsletters
+    - receipts
+    - invoices
+    - spam
+    - other
+
+  # Auto-response templates
+  templates:
+    out_of_office: |
+      Thank you for your email. I'm currently out of the office
+      and will respond when I return.
+
+    acknowledgment: |
+      Thank you for reaching out. I've received your message
+      and will get back to you within 24 hours.
+
+    follow_up: |
+      I wanted to follow up on my previous email.
+      Please let me know if you have any questions.
+
+  # Categorization rules (keyword -> category)
+  rules:
+    - keywords: [urgent, asap, immediately, critical]
+      category: urgent
+      priority: high
+
+    - keywords: [invoice, payment, billing, receipt]
+      category: invoices
+      priority: normal
+
+    - keywords: [newsletter, digest, weekly, daily update]
+      category: newsletters
+      priority: low
+
+    - keywords: [unsubscribe, opt-out, marketing]
+      category: spam
+      priority: low
+
+  # Notification settings
+  notifications:
+    urgent_emails: true
+    daily_summary: true
+    summary_time: "09:00"
+
+  # Action item extraction
+  action_keywords:
+    - "please"
+    - "could you"
+    - "would you"
+    - "need you to"
+    - "action required"
+    - "by EOD"
+    - "deadline"

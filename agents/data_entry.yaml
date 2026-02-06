@@ -1,0 +1,73 @@
+name: data_entry
+type: data_entry
+enabled: true
+
+settings:
+  # Folders to watch for new files
+  watch_folders:
+    - ~/Downloads
+    - ~/Documents/Inbox
+
+  # Output destination for processed data
+  output_path: ~/cerberus/data
+
+  # Supported file types
+  file_types:
+    - .pdf
+    - .png
+    - .jpg
+    - .jpeg
+    - .txt
+    - .csv
+
+  # Field mappings (source -> destination)
+  field_mappings:
+    first_name: name
+    last_name: name
+    phone_number: phone
+    email_address: email
+    street_address: address
+    total: amount
+    date_received: date
+
+  # Validation rules
+  validation_rules:
+    email:
+      type: email
+      required: true
+
+    phone:
+      type: phone
+      required: false
+
+    amount:
+      type: number
+      required: false
+      min: 0
+
+    date:
+      type: date
+      required: false
+      format: "%Y-%m-%d"
+
+  # Default fields to extract
+  default_fields:
+    - name
+    - email
+    - phone
+    - address
+    - date
+    - amount
+    - description
+
+  # OCR settings
+  ocr:
+    enabled: true
+    language: eng
+    confidence_threshold: 0.7
+
+  # Google Sheets integration (if configured)
+  google_sheets:
+    enabled: false
+    spreadsheet_id: ""
+    sheet_name: "Data"
