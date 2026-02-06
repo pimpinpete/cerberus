@@ -568,54 +568,15 @@
     </div>
 
     <script>
-        const DATA = {
-            stats: {
-                total_revenue: 284000,
-                month_revenue: 42800,
-                total_clients: 18,
-                active_jobs: 7,
-                completed_jobs: 41,
-                new_leads: 4
-            },
-            recent_jobs: [
-                { title: "Workflow automations", client: "Lumen Media", status: "in_progress", price: 5400 },
-                { title: "CRM triage bot", client: "Harper Legal", status: "pending", price: 3200 },
-                { title: "Invoice classifier", client: "Citrine Labs", status: "completed", price: 7800 },
-                { title: "Lead enrichment", client: "Sage Partners", status: "completed", price: 4600 }
-            ],
-            leads: [
-                { source: "Upwork", client_name: "Atlas Realty", description: "Automate property lead intake", budget: "$4k", status: "new" },
-                { source: "Fiverr", client_name: "Morning Brew", description: "Email sequence automation", budget: "$1.2k", status: "new" },
-                { source: "Referral", client_name: "Northwind", description: "Ops dashboard upgrade", budget: "$8k", status: "converted" }
-            ],
-            jobs: [
-                { title: "Client onboarding flow", client_name: "Lumen Media", agent_type: "automation", price: 5200, status: "in_progress" },
-                { title: "Expense audit bot", client_name: "Harper Legal", agent_type: "data_entry", price: 2900, status: "pending" },
-                { title: "Document sorter", client_name: "Citrine Labs", agent_type: "doc_processor", price: 7800, status: "completed" }
-            ],
-            clients: [
-                { name: "Lumen Media", email: "ops@lumen.co", company: "Lumen", source: "Referral", job_count: 3, total_spent: 16200 },
-                { name: "Harper Legal", email: "team@harper.io", company: "Harper", source: "Upwork", job_count: 2, total_spent: 6100 },
-                { name: "Citrine Labs", email: "hello@citrine.ai", company: "Citrine", source: "Direct", job_count: 4, total_spent: 20100 }
-            ],
-            agents: [
-                { name: "LedgerPulse", type: "Finance", enabled: true },
-                { name: "ClientSignal", type: "CRM", enabled: true },
-                { name: "OpsOracle", type: "Workflow", enabled: false }
-            ],
-            transactions: [
-                { date: "2026-02-04", description: "Payment for Invoice classifier", amount: 7800, type: "income" },
-                { date: "2026-01-22", description: "Payment for Workflow automations", amount: 5400, type: "income" },
-                { date: "2026-01-18", description: "Contractor payout", amount: -1200, type: "expense" }
-            ],
-            notes: [
-                { title: "February targets", content: "Close 6 new client accounts and expand 2 retainers.", category: "todo", pinned: true, updated_at: "2026-02-05" },
-                { title: "Automation ideas", content: "Build intake form -> Slack triage -> auto quote.", category: "ideas", pinned: false, updated_at: "2026-02-02" }
-            ],
-            revenue: Array.from({ length: 30 }).map((_, i) => ({
-                date: i,
-                amount: Math.max(0, Math.round(2000 + Math.sin(i / 3) * 1200 + Math.random() * 1400))
-            }))
+        const API_BASE = window.API_BASE || "";
+        const EMPTY_STATS = {
+            total_revenue: 0,
+            month_revenue: 0,
+            total_clients: 0,
+            active_jobs: 0,
+            completed_jobs: 0,
+            new_leads: 0,
+            recent_jobs: []
         };
 
         const PAGE_META = {
@@ -639,12 +600,34 @@
             document.getElementById("page-sub").textContent = meta.sub;
         }
 
+        async function fetchJson(path, fallback) {
+            try {
+                const response = await fetch(`${API_BASE}${path}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (err) {
+                console.warn("API error", path, err);
+                return fallback;
+            }
+        }
+
+        async function loadPageData(page) {
+            if (page === "dashboard") await loadDashboard();
+            else if (page === "leads") await loadLeads();
+            else if (page === "jobs") await loadJobs();
+            else if (page === "clients") await loadClients();
+            else if (page === "agents") await loadAgents();
+            else if (page === "revenue") await loadRevenue();
+            else if (page === "notes") await loadNotes();
+        }
+
         function showPage(page, el) {
             document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
             document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
             document.getElementById("page-" + page).classList.add("active");
             if (el) el.classList.add("active");
             setTopbar(page);
+            loadPageData(page);
         }
 
         document.querySelectorAll(".nav-item").forEach(item => {
@@ -668,8 +651,8 @@
                 return;
             }
 
-            const max = Math.max(...points.map(p => p.amount));
-            const min = Math.min(...points.map(p => p.amount));
+            const max = Math.max(...points.map(p => p.amount || 0));
+            const min = Math.min(...points.map(p => p.amount || 0));
             const range = max - min || 1;
             const pad = 8 * ratio;
             const step = (w - pad * 2) / Math.max(points.length - 1, 1);
@@ -677,7 +660,7 @@
             ctx.beginPath();
             points.forEach((p, i) => {
                 const x = pad + i * step;
-                const y = h - pad - ((p.amount - min) / range) * (h - pad * 2);
+                const y = h - pad - (((p.amount || 0) - min) / range) * (h - pad * 2);
                 if (i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             });
@@ -689,8 +672,10 @@
             ctx.stroke();
         }
 
-        function loadDashboard() {
-            const stats = DATA.stats;
+        async function loadDashboard() {
+            const stats = await fetchJson("/api/dashboard", EMPTY_STATS);
+            const chart = await fetchJson("/api/revenue?days=30", []);
+
             document.getElementById("stats-grid").innerHTML = `
                 <div class="card stat-card">
                     <div class="stat-label">Total Revenue</div>
@@ -709,36 +694,36 @@
                 <div class="card stat-card">
                     <div class="stat-label">Clients</div>
                     <div class="stat-row">
-                        <div class="stat-value">${stats.total_clients}</div>
+                        <div class="stat-value">${stats.total_clients || 0}</div>
                         <div class="stat-pill">Accounts</div>
                     </div>
                 </div>
                 <div class="card stat-card">
                     <div class="stat-label">Active Jobs</div>
                     <div class="stat-row">
-                        <div class="stat-value">${stats.active_jobs}</div>
+                        <div class="stat-value">${stats.active_jobs || 0}</div>
                         <div class="stat-pill">In flight</div>
                     </div>
                 </div>
                 <div class="card stat-card">
                     <div class="stat-label">Completed</div>
                     <div class="stat-row">
-                        <div class="stat-value">${stats.completed_jobs}</div>
+                        <div class="stat-value">${stats.completed_jobs || 0}</div>
                         <div class="stat-pill">Delivered</div>
                     </div>
                 </div>
                 <div class="card stat-card">
                     <div class="stat-label">New Leads</div>
                     <div class="stat-row">
-                        <div class="stat-value">${stats.new_leads}</div>
+                        <div class="stat-value">${stats.new_leads || 0}</div>
                         <div class="stat-pill">Untriaged</div>
                     </div>
                 </div>
             `;
 
-            document.getElementById("leads-badge").textContent = stats.new_leads;
-            document.getElementById("spark-total").textContent = formatCurrency(stats.month_revenue);
-            document.getElementById("recent-jobs").innerHTML = DATA.recent_jobs.map(j => `
+            document.getElementById("leads-badge").textContent = stats.new_leads || 0;
+            document.getElementById("spark-total").textContent = formatCurrency(stats.month_revenue || 0);
+            document.getElementById("recent-jobs").innerHTML = (stats.recent_jobs || []).map(j => `
                 <tr>
                     <td>${j.title}</td>
                     <td>${j.client || "N/A"}</td>
@@ -747,63 +732,59 @@
                 </tr>
             `).join("");
 
-            drawSparkline("revenue-spark", DATA.revenue, "rgba(87,226,229,0.9)");
+            drawSparkline("revenue-spark", chart, "rgba(87,226,229,0.9)");
         }
 
-        function loadLeads() {
-            document.getElementById("leads-count").textContent = DATA.leads.length;
-            document.getElementById("leads-table").innerHTML = DATA.leads.map(l => `
+        async function loadLeads() {
+            const leads = await fetchJson("/api/leads", []);
+            document.getElementById("leads-count").textContent = leads.length;
+            document.getElementById("leads-table").innerHTML = leads.map(l => `
                 <tr>
                     <td>${l.source || "Direct"}</td>
-                    <td>${l.client_name}</td>
+                    <td>${l.client_name || ""}</td>
                     <td>${(l.description || "").substring(0, 50)}...</td>
                     <td>${l.budget || "TBD"}</td>
                     <td><span class="status ${l.status}">${l.status}</span></td>
-                    <td class="actions">
-                        ${l.status === "new" ? `<button class="btn btn-small btn-primary">Convert</button>` : ""}
-                    </td>
+                    <td class="actions"></td>
                 </tr>
             `).join("");
         }
 
-        function loadJobs() {
-            document.getElementById("jobs-count").textContent = DATA.jobs.length;
-            document.getElementById("jobs-table").innerHTML = DATA.jobs.map(j => `
+        async function loadJobs() {
+            const jobs = await fetchJson("/api/jobs", []);
+            document.getElementById("jobs-count").textContent = jobs.length;
+            document.getElementById("jobs-table").innerHTML = jobs.map(j => `
                 <tr>
                     <td>${j.title}</td>
                     <td>${j.client_name || "N/A"}</td>
                     <td>${j.agent_type || "Custom"}</td>
                     <td class="mono">${formatCurrency(j.price)}</td>
                     <td><span class="status ${j.status}">${j.status}</span></td>
-                    <td class="actions">
-                        <select style="padding:6px;border-radius:8px;background:rgba(255,255,255,0.08);color:#eaf2ff;border:1px solid rgba(255,255,255,0.1);">
-                            <option>${j.status}</option>
-                        </select>
-                    </td>
+                    <td class="actions"></td>
                 </tr>
             `).join("");
         }
 
-        function loadClients() {
-            document.getElementById("clients-count").textContent = DATA.clients.length;
-            document.getElementById("clients-table").innerHTML = DATA.clients.map(c => `
+        async function loadClients() {
+            const clients = await fetchJson("/api/clients", []);
+            document.getElementById("clients-count").textContent = clients.length;
+            document.getElementById("clients-table").innerHTML = clients.map(c => `
                 <tr>
                     <td>${c.name}</td>
                     <td>${c.email || "-"}</td>
                     <td>${c.company || "-"}</td>
                     <td>${c.source || "Direct"}</td>
-                    <td>${c.job_count}</td>
+                    <td>${c.job_count || 0}</td>
                     <td class="mono">${formatCurrency(c.total_spent)}</td>
-                    <td class="actions">
-                        <button class="btn btn-small btn-danger">Delete</button>
-                    </td>
+                    <td class="actions"></td>
                 </tr>
             `).join("");
         }
 
-        function loadAgents() {
-            document.getElementById("agents-count").textContent = DATA.agents.length;
-            document.getElementById("agents-grid").innerHTML = DATA.agents.map(a => `
+        async function loadAgents() {
+            const agents = await fetchJson("/api/agents", []);
+            document.getElementById("agents-count").textContent = agents.length;
+            document.getElementById("agents-grid").innerHTML = agents.map(a => `
                 <div class="agent-card">
                     <div class="agent-header">
                         <span class="agent-name">${a.name}</span>
@@ -814,34 +795,39 @@
             `).join("");
         }
 
-        function loadRevenue() {
-            document.getElementById("total-revenue").textContent = formatCurrency(DATA.stats.total_revenue);
-            document.getElementById("month-revenue").textContent = formatCurrency(DATA.stats.month_revenue);
-            document.getElementById("transactions-table").innerHTML = DATA.transactions.map(t => `
+        async function loadRevenue() {
+            const stats = await fetchJson("/api/dashboard", EMPTY_STATS);
+            const transactions = await fetchJson("/api/transactions?limit=50", []);
+            const chart = await fetchJson("/api/revenue?days=90", []);
+
+            document.getElementById("total-revenue").textContent = formatCurrency(stats.total_revenue || 0);
+            document.getElementById("month-revenue").textContent = formatCurrency(stats.month_revenue || 0);
+            document.getElementById("transactions-table").innerHTML = transactions.map(t => `
                 <tr>
-                    <td>${t.date}</td>
-                    <td>${t.description}</td>
-                    <td style="color:${t.amount >= 0 ? "var(--success)" : "var(--danger)"}">
-                        ${t.amount >= 0 ? "+" : "-"}${formatCurrency(Math.abs(t.amount))}
+                    <td>${(t.date || "").split("T")[0] || "N/A"}</td>
+                    <td>${t.description || t.job_title || "Payment"}</td>
+                    <td style="color:${t.type === "income" ? "var(--success)" : "var(--danger)"}">
+                        ${t.type === "income" ? "+" : "-"}${formatCurrency(Math.abs(t.amount || 0))}
                     </td>
                 </tr>
             `).join("");
 
-            drawSparkline("revenue-chart", DATA.revenue, "rgba(242,184,128,0.9)");
+            drawSparkline("revenue-chart", chart, "rgba(242,184,128,0.9)");
         }
 
-        function loadNotes() {
-            document.getElementById("notes-count").textContent = DATA.notes.length;
-            document.getElementById("notes-grid").innerHTML = DATA.notes.map(n => `
+        async function loadNotes() {
+            const notes = await fetchJson("/api/notes", []);
+            document.getElementById("notes-count").textContent = notes.length;
+            document.getElementById("notes-grid").innerHTML = notes.map(n => `
                 <div class="note-card ${n.pinned ? "pinned" : ""}">
                     <div class="note-title">${n.pinned ? "📌 " : ""}${n.title || "Untitled"}</div>
                     <div class="note-preview">${(n.content || "").substring(0, 100)}</div>
-                    <div class="note-meta">${n.category} • ${n.updated_at}</div>
+                    <div class="note-meta">${n.category || "general"} • ${(n.updated_at || "").split("T")[0]}</div>
                 </div>
             `).join("");
         }
 
-        function init() {
+        async function init() {
             const now = new Date();
             document.getElementById("today-chip").textContent = now.toLocaleDateString(undefined, {
                 weekday: "short",
@@ -849,13 +835,13 @@
                 day: "numeric"
             });
             setTopbar("dashboard");
-            loadDashboard();
-            loadLeads();
-            loadJobs();
-            loadClients();
-            loadAgents();
-            loadRevenue();
-            loadNotes();
+            await loadDashboard();
+            await loadLeads();
+            await loadJobs();
+            await loadClients();
+            await loadAgents();
+            await loadRevenue();
+            await loadNotes();
         }
 
         init();
