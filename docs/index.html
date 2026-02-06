@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerberus - AI Agents for Business Automation</title>
+    <meta name="description" content="Custom AI agents that automate email, data entry, and document processing. Save 10+ hours per week on repetitive tasks.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 span { color: #ffd700; }
+
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-2px); }
+
+        .btn-primary {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            margin-left: 15px;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+        }
+
+        /* Section */
+        .section {
+            padding: 80px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        /* Agents */
+        .agents {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .agent-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .agent-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agent-card ul {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .agent-card li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .agent-card li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        /* How it works */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .step-num {
+            width: 50px;
+            height: 50px;
+            background: #1a1a2e;
+            color: #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+
+        .step h4 { margin-bottom: 10px; }
+
+        /* Pricing */
+        .pricing {
+            background: #f8f9fa;
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .pricing-card.featured {
+            border: 3px solid #ffd700;
+            transform: scale(1.05);
+        }
+
+        .pricing-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .pricing-card .price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin: 20px 0;
+        }
+
+        .pricing-card .price span {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .pricing-card li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* CTA */
+        .cta {
+            background: #1a1a2e;
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .cta h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background: #111;
+            color: #aaa;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        footer a { color: #ffd700; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .btn-secondary { margin: 15px 0 0 0; display: block; }
+            .stats { gap: 30px; }
+            .pricing-card.featured { transform: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <section class="hero">
+        <h1>🐕 <span>Cerberus</span></h1>
+        <p>AI agents that handle your busywork. Automate email, data entry, and document processing - so you can focus on what matters.</p>
+        <a href="#contact" class="btn btn-primary">Get a Free Consultation</a>
+        <a href="#agents" class="btn btn-secondary">See How It Works</a>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">10+</div>
+                <div class="stat-label">Hours saved per week</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">90%</div>
+                <div class="stat-label">Reduction in manual work</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">24/7</div>
+                <div class="stat-label">Always working for you</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents -->
+    <section class="section" id="agents">
+        <h2>Three AI Agents, Infinite Possibilities</h2>
+        <div class="agents">
+            <div class="agent-card">
+                <h3>📧 Email Manager</h3>
+                <p>Never miss an important email again. Your AI assistant handles inbox chaos.</p>
+                <ul>
+                    <li>Auto-categorize incoming emails</li>
+                    <li>Extract action items automatically</li>
+                    <li>Draft responses for your approval</li>
+                    <li>Daily inbox summaries</li>
+                    <li>Schedule follow-ups</li>
+                </ul>
+            </div>
+            <div class="agent-card">
+                <h3>📊 Data Entry</h3>
+                <p>Stop copying data by hand. Drop documents, get structured data.</p>
+                <ul>
+                    <li>Extract from PDFs & images</li>
+                    <li>Populate spreadsheets automatically</li>
+                    <li>Validate against your rules</li>
+                    <li>Watch folders for new files</li>
+                    <li>Zero manual entry errors</li>
+                </ul>
+            </div>
+            <div class="agent-card">
+                <h3>📄 Document Processor</h3>
+                <p>Turn document chaos into organized intelligence.</p>
+                <ul>
+                    <li>Summarize long documents</li>
+                    <li>Extract key information</li>
+                    <li>Auto-file to correct folders</li>
+                    <li>Generate reports</li>
+                    <li>Make everything searchable</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section" style="background: #f8f9fa;">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h4>Discovery Call</h4>
+                <p>15-minute call to understand your workflow and pain points</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h4>Custom Build</h4>
+                <p>I build an AI agent tailored to your specific needs</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h4>Test & Refine</h4>
+                <p>You test it, I refine until it's perfect</p>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <h4>Deploy & Support</h4>
+                <p>Handoff with docs + ongoing support</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="section pricing">
+        <h2>Simple Pricing</h2>
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <div class="price">$500 <span>one-time</span></div>
+                <ul>
+                    <li>1 AI agent (email OR data entry)</li>
+                    <li>Basic configuration</li>
+                    <li>14 days support</li>
+                    <li>Documentation</li>
+                </ul>
+                <a href="#contact" class="btn btn-primary" style="width:100%">Get Started</a>
+            </div>
+            <div class="pricing-card featured">
+                <h3>Professional</h3>
+                <div class="price">$2,000 <span>one-time</span></div>
+                <ul>
+                    <li>Custom AI agent</li>
+                    <li>3 integrations included</li>
+                    <li>30 days support</li>
+                    <li>Priority response</li>
+                    <li>Video training</li>
+                </ul>
+                <a href="#contact" class="btn btn-primary" style="width:100%">Get Started</a>
+            </div>
+            <div class="pricing-card">
+                <h3>Enterprise</h3>
+                <div class="price">$5,000+ <span>custom</span></div>
+                <ul>
+                    <li>Multi-agent system</li>
+                    <li>Unlimited integrations</li>
+                    <li>Ongoing maintenance</li>
+                    <li>Dedicated support</li>
+                    <li>Custom training</li>
+                </ul>
+                <a href="#contact" class="btn btn-primary" style="width:100%">Contact Us</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" id="contact">
+        <h2>Ready to Automate?</h2>
+        <p>Book a free 15-minute consultation to see if Cerberus is right for your business.</p>
+        <a href="mailto:apetersongroup@gmail.com?subject=Cerberus%20Inquiry" class="btn btn-primary">Email Me</a>
+        <p style="margin-top: 30px; font-size: 0.9rem;">Or find me on <a href="#" style="color: #ffd700;">Upwork</a> | <a href="#" style="color: #ffd700;">Fiverr</a></p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>🐕 Cerberus - AI Agents for Business Automation</p>
+        <p style="margin-top: 10px;">Built by <a href="mailto:apetersongroup@gmail.com">Andrew Peterson</a></p>
+    </footer>
+</body>
+</html>
